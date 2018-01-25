@@ -3,65 +3,75 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/korman/sqlite2mongo/user_data"
+	_ "github.com/mattn/go-sqlite3"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 func main() {
 	db, err := sql.Open("sqlite3", "./2000w.db")
-	//插入数据
-	stmt, err := db.Prepare("INSERT INTO userinfo(username, departname, created) values(?,?,?)")
-	checkErr(err)
+	var count int = 0
 
-	res, err := stmt.Exec("astaxie", "研发部门", "2012-12-09")
-	checkErr(err)
+	if nil != err {
+		fmt.Printf(err.Error())
+	} else {
+		session, err := mgo.Dial("127.0.0.1")
+		defer session.Close()
 
-	id, err := res.LastInsertId()
-	checkErr(err)
+		if nil != err {
+			panic(err)
+		}
 
-	fmt.Println(id)
-	//更新数据
-	stmt, err = db.Prepare("update userinfo set username=? where uid=?")
-	checkErr(err)
+		var cardNo string = ""
+		var descriot string = ""
+		var district1 string = ""
+		var district3 string = ""
+		var district4 string = ""
+		var district5 string = ""
+		var district6 string = ""
+		var firstNm string = ""
+		var lastNm string = ""
+		var taste string = ""
+		var cTel string = ""
+		var cAddress string = ""
+		var cZip string = ""
+		c := session.DB("people_2000w").C("cdsgus")
 
-	res, err = stmt.Exec("astaxieupdate", id)
-	checkErr(err)
+		rows, err := db.Query("SELECT * FROM cdsgus where CtfId LIKE '370102199%'")
 
-	affect, err := res.RowsAffected()
-	checkErr(err)
+		startTime := time.Now().Unix()
 
-	fmt.Println(affect)
+		for rows.Next() {
+			data := &user_data.CdsgusData{}
 
-	//查询数据
-	rows, err := db.Query("SELECT * FROM userinfo")
-	checkErr(err)
+			err = rows.Scan(&data.Base.Name, &cardNo, &descriot, &data.Base.CtfTp, &data.Base.CtfId,
+				&data.Base.Gender, &data.Base.Birthday, &data.Contact.Address, &data.Contact.Zip, &data.Base.Dirty, &district1,
+				&data.Base.Nationality, &district3, &district4, &district5, &district6,
+				&firstNm, &lastNm, &data.Base.Duty, &data.Contact.Mobile, &data.Contact.Tel, &data.Contact.Fax, &data.Contact.Email, &data.Base.Nation,
+				&taste, &data.Base.Education, &data.Contact.Company, &cTel, &cAddress, &cZip, &data.Base.Family,
+				&data.RegTime, &data.OldId)
 
-	for rows.Next() {
-		var uid int
-		var username string
-		var department string
-		var created string
-		err = rows.Scan(&uid, &username, &department, &created)
-		checkErr(err)
-		fmt.Println(uid)
-		fmt.Println(username)
-		fmt.Println(department)
-		fmt.Println(created)
+			data.Id_ = bson.NewObjectId()
+
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			err = c.Insert(&data)
+
+			if nil != err {
+				panic(err)
+			}
+
+			if count%1000 == 0 {
+				fmt.Printf("当前插入数量:%d\n，已过去%d秒", count, time.Now().Unix()-startTime)
+			}
+
+			count++
+		}
 	}
 
-	//删除数据
-	stmt, err = db.Prepare("delete from userinfo where uid=?")
-	checkErr(err)
-
-	res, err = stmt.Exec(id)
-	checkErr(err)
-
-	affect, err = res.RowsAffected()
-	checkErr(err)
-
-	fmt.Println(affect)
-
 	db.Close()
-}
-
-func checkErr(err error) {
-
 }

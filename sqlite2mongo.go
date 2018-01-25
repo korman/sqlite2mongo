@@ -66,7 +66,7 @@ func main() {
 			}
 
 			if count%1000 == 0 {
-				fmt.Printf("当前插入数量:%d\n，已过去%d秒",count,time.Now().Unix() - startTime)
+				fmt.Printf("当前插入数量:%d\n，已过去%d秒", count, time.Now().Unix()-startTime)
 			}
 
 			count++

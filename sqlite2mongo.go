@@ -28,32 +28,22 @@ func main() {
 		var descriot string = ""
 		var district1 string = ""
 		var district3 string = ""
+		var district4 string = ""
+		var district5 string = ""
+		var district6 string = ""
+		var firstNm string = ""
+		var lastNm string = ""
+		var taste string = ""
+		var cTel string = ""
+		var cAddress string = ""
+		var cZip string = ""
+		c := session.DB("people_2000w").C("cdsgus")
 
 		rows, err := db.Query("SELECT * FROM cdsgus where CtfId LIKE '370102199%'")
 
+		startTime := time.Now().Unix()
+
 		for rows.Next() {
-			var name string = ""
-			var cardNo string = ""
-			var descriot string = ""
-			var ctfTp string = ""
-			var ctfId string = ""
-			var gender string = ""
-			var birthday string = ""
-			var address string = ""
-			var zip string = ""
-			var dirty string = ""
-			var district1 string = ""
-			var district2 string = ""
-			var district3 string = ""
-			var firstNm string = ""
-			var lastNm string = ""
-			var duty string = ""
-			var mobile string = ""
-			var tel string = ""
-			var fax string = ""
-			var email string = ""
-			var nation string = ""
-			var taste string = ""
 			data := &user_data.CdsgusData{}
 
 			err = rows.Scan(&data.Base.Name, &cardNo, &descriot, &data.Base.CtfTp, &data.Base.CtfId,
